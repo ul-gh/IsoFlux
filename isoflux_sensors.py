@@ -30,6 +30,7 @@ class Flow_sensor(object):
         self.voltage = np.average(self.samples) * self.v_per_digit
         # Volumetric coolant flow rate liter/sec
         self.liter_sec = self.voltage * self.SENSITIVITY
+        self.kg_sec = 0.0
 
     def set_temperature(self, temperature):
         self.temperature = temperature

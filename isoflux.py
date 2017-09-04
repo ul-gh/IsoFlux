@@ -44,6 +44,7 @@ class IsoFlux(object):
 
         # Initialise ADC
         self.adc = ADS1256(conf.ADS1256)
+        self.adc.cal_self()
 
         # Flow sensor class has volumetric and gravimetric flow as properties
         # which are updated indirectly with ADC samples via the update() method.
@@ -101,6 +102,7 @@ class IsoFlux(object):
             self.resistance[i] = measurement.r_downstream
             self.temperature[i] = measurement.T_downstream
             self.power[i] = measurement.power
+            measurement.p_offset = self.p_offset[i]
 
 
 
