@@ -77,7 +77,7 @@ class Measurement(object):
         # Resistance offset for sensor channel in Ohms
         self.r_offset = [ch_conf[key]["r_offset"] for key in pt_pair]
         # Temperature offset for sensor channel in K
-        self.T_offset = [ch_conf[key]["T_offset"] for key in pt_pair]
+        self.T_offset = ch_conf[pt_pair[1]]["T_offset"]
         self.c_th_function = ch_conf["common"]["c_th_function"]
         # Power offset is set via MQTT
         self.p_offset = 0.0
@@ -105,19 +105,20 @@ class Measurement(object):
 
         # Calculate resistances for multi-leg wheatstone bridge setup
         # starting with upstream (cold inlet) sensor resistance value
-        self.r_upstream = up.wheatstone(
+        r_upstream_w_offset = up.wheatstone(
             self.ch_unscaled[2],
             self.ch_unscaled[1],
             self.N_REF,
             self.R_S[0]
-        ) - self.r_offset[0]
+        )
+        self.r_upstream = r_upstream_w_offset - self.r_offset[0]
         # Downstream sensor uses the upstream sensor as reference bridge leg
         self.r_downstream = up.wheatstone(
             self.ch_unscaled[3],
             # Differential measurement must be added to absolute measurement
             # to calculate the reference voltage for the second bridge setup.
             self.ch_unscaled[2] + self.ch_unscaled[1],
-            self.R_S[0]/self.r_upstream,
+            self.R_S[0]/r_upstream_w_offset,
             self.R_S[1]
         ) - self.r_offset[1]
         # Calculate temperatures from Pt1000 sensor resistances
@@ -125,11 +126,11 @@ class Measurement(object):
         self.T_upstream = up.ptRTD_temperature(
             self.r_upstream,
             r_0=self.r_0[0]
-        ) + self.T_offset[0]
+        )
         self.T_downstream = up.ptRTD_temperature(
             self.r_downstream,
             r_0=self.r_0[1]
-        ) + self.T_offset[1]
+        ) - self.T_offset
 
     def calculate_power(self, flow_kg_sec):
         # Specific heat capacity
@@ -137,4 +138,3 @@ class Measurement(object):
         # Final output is thermal power by heat balance calculation
         self.power = flow_kg_sec * c_th * (self.T_downstream-self.T_upstream
                                            ) - self.p_offset
-

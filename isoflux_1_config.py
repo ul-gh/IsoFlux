@@ -20,8 +20,8 @@ CH_CONF = {
         "gain": 8,
         "mux": NEG_AINCOM,
         # Length of moving average filter window
-        "FILTER_SIZE": 16,
-#        "FILTER_SIZE": 2,
+#        "FILTER_SIZE": 16,
+        "FILTER_SIZE": 2,
         # "c_th_function": uli_physik.c_th_water
         "c_th_function": uli_physik.c_th_glykol60,
     },
@@ -77,50 +77,55 @@ CH_CONF = {
         "info": "Heat Source 1",
         "mux": NEG_AIN2,
         "offset": 0,
-        "R_S": 9960.10,
+        "R_S": 9956.00,
         "r_0": 1000.055,
-        "r_offset": 0.355,
+        "r_offset": 0.385,
 #        "r_offset": 0.000,
+#        "T_offset": -0.018,
         "T_offset": 0.0,
     },
     "hs_2": {
         "info": "Heat Source 2",
         "mux": NEG_AIN3,
         "offset": 0,
-        "R_S": 9980.48,
+        "R_S": 9976.64,
         "r_0": 999.954,
         "r_offset": 0.350,
 #        "r_offset": 0.000,
+#        "T_offset": -0.133,
         "T_offset": 0.0,
     },
     "hs_3": {
         "info": "Heat Source 3",
         "mux": NEG_AIN4,
         "offset": 0,
-        "R_S": 9974.27,
+        "R_S": 9970.77,
         "r_0": 1000.100,
         "r_offset": 0.323,
 #        "r_offset": 0.000,
+#        "T_offset": -0.107,
         "T_offset": 0.0,
     },
     "hs_4": {
         "info": "Heat Source 4",
         "mux": NEG_AIN5,
         "offset": 0,
-        "R_S": 9981.87,
+        "R_S": 9978.68,
         "r_0": 1000.018,
-        "r_offset": 0.270,
+        "r_offset": 0.290,
 #        "r_offset": 0.000,
+#        "T_offset": -0.092,
         "T_offset": 0.0,
     },
     "hs_5": {
         "info": "Heat Source 5",
         "mux": NEG_AIN6,
         "offset": 0,
-        "R_S": 9965.30,
+        "R_S": 9962.60,
         "r_0": 999.936,
-        "r_offset": 0.260,
+        "r_offset": 0.270,
 #        "r_offset": 0.000,
+#        "T_offset": -0.087,
         "T_offset": 0.0,
     },
 }
@@ -210,7 +215,7 @@ class ADS1256(object):
     adcon = CLKOUT_OFF | SDCS_OFF | gain_flags
     # REG_DRATE: 
     # 10 SPS places a filter zero at 50 Hz and 60 Hz for line noise rejection
-    drate  = DRATE_50
+    drate  = DRATE_10
 #    drate  = DRATE_100
     # REG_IO: No GPIOs needed
     gpio = 0x00

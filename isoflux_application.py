@@ -73,20 +73,24 @@ try:
                 "\n"*4 + "Zero-Calibration...\n"
                 "Old offset:   {}\n"
                 "Sensor values: {}".format(
-                    " ".join(
-                        ["{: 12.3f}".format(i) for i in isoflux_1.p_offset]
+                    " ".join(["0.0"] + ["{: 12.3f}".format(i.T_offset)
+                                        for i in isoflux_1.measurements
+                                        ]
                     ),
                     " ".join(
-                        ["{: 12.3f}".format(i) for i in isoflux_1.resistance]
+                        ["{: 12.3f}".format(i) for i in isoflux_1.temperature]
                     ),
                 )
             )
             # This sets the output power levels to zero:
-            for i in range(1, len(isoflux_1.p_offset)):
-                isoflux_1.p_offset[i] += isoflux_1.power[i]
+            for i in isoflux_1.measurements:
+                i.T_offset += i.T_downstream - i.T_upstream
             print(
                   "New offset:    "
-                + " ".join(["{: 12.3f}".format(i) for i in isoflux_1.p_offset])
+                + " ".join(["0.0"] + ["{: 12.3f}".format(i.T_offset)
+                                      for i in isoflux_1.measurements
+                                      ]
+                )
             )
             raw_input("Press ENTER to continue!")
             print(

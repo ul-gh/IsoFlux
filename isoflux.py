@@ -68,9 +68,6 @@ class IsoFlux(object):
         self.resistance = np.zeros(self.n_ch)
         self.temperature = np.zeros(self.n_ch)
         # Temperature offset to account for sensor self-heating
-        self.T_offset = np.array(  [0.0]
-                                 + [i.T_offset[1] for i in self.measurements]
-                                 )
         # Influx sensor by definition has no power reading, self.power[0] stays
         # at zero and is stored to keep indexing identical for all channels.
         self.power = np.zeros(self.n_ch)
@@ -192,10 +189,10 @@ class IsoFlux(object):
         pt_channels_oc.append(self.measurements[-1].ch_unscaled[3])
 
         sys.stdout.write(
-            "Channel: Flow. Raw value: {: 10d}\n"
-            "Mass flow rate: {: 6.3f} g/sec ({: 6.3f} ml/sec). "
+            "Channel:  Flow.  Raw value: {: 10d}\n"
+            "    Mass flow rate: {: 6.3f} g/sec ({: 6.3f} ml/sec). "
             "Sensor voltage: {: 6.3f} V\033[J\n\n"
-            "Channel: R_ref. Raw value: {: 10d}\033[J\n\n"
+            "Channel:  R_ref.  Raw value: {: 10d}\033[J\n\n"
             "{}".format(
                 int(self.flow_sensor.voltage / self.flow_sensor.v_per_digit),
                 1000*self.flow_sensor.kg_sec,
@@ -203,21 +200,22 @@ class IsoFlux(object):
                 self.flow_sensor.voltage,
                 int(self.measurements[0].ch_avg[1]),
                 # List of strings concatenated by the string.join() method:
-                "".join(
-                    [
-                        "Channel: {}. Raw value: {: 10d}. "
-                        "Offset Zeroed: {: 10d}\n"
-                        "Resistance: {: 8.3f} Ohms, Temperature: {: 7.3f} °C, "
-                        "Power: {: 5.3f} J/s"
-                        "\033[J\n\n".format(
-                            self.info[i], int(pt_channels_raw[i]),
-                            int(pt_channels_oc[i]),
-                            self.resistance[i],
-                            self.temperature[i],
-                            self.power[i]
-                        ) for i in range(0, self.n_ch)
-                    ]
-                )
+                "".join([
+                    "Channel:  {}\n"
+                    "    Upstream: Raw: {: 9.3f} Ohms, OC: {: 9.3f} Ohms\n"
+                    "              Temp: {: 9.3f} °C\n"
+                    "    Downstream: Raw: {: 9.3f} Ohms, OC: {: 9.3f} Ohms\n"
+                    "                Temp: {: 9.3f} °C,  OC: {: 9.3f} °C\n"
+                    "    Power: {: 5.3f} J/s, OC: {: 5.3f} J/s"
+                    "\033[J\n\n\n".format(
+                        i.info,
+                        i.r_upstream + i.r_offset[0], i.r_upstream,
+                        i.T_upstream,
+                        i.r_downstream + i.r_offset[1], i.r_downstream,
+                        i.T_downstream + i.T_offset, i.T_downstream,
+                        i.power + i.p_offset, i.power,
+                    ) for i in self.measurements
+                ]),
             )
         )
         sys.stdout.flush()
