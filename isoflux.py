@@ -117,7 +117,6 @@ class IsoFlux(object):
               )
         # Time stamp to limit output data rate to fixed time interval
         timestamp = time.time()
-        toggle_color = True
 
         while True:
             # Stop operation when requested
@@ -132,63 +131,16 @@ class IsoFlux(object):
                 # tered text output in case other threads also write to stdout
                 if thread_lock is not None:
                     thread_lock.acquire()
-                # For calibration use the following instead:
+                # Command line output for calibration etc.
                 self.cal_output()
-#                self.nice_output()
                 if thread_lock is not None:
                     thread_lock.release()
 
 
-    # Format nice looking text output:
-    _n_o_firstrun = True
-    _n_o_toggle = True
-    def nice_output(self):
-        #return # DEBUG: Unclutter output
-        # First run: Store console cursor position and set up static variable.
-        if self._n_o_firstrun is True:
-            self._n_o_firstrun = False
-            sys.stdout.write("\033[s") # Store cursor position
-        # Toggle color:
-        self._n_o_toggle = self._n_o_toggle!=True
-        if self._n_o_toggle is True:
-            sys.stdout.write("\033[31m")
-        else:
-            sys.stdout.write("\033[0m")
-
-        sys.stdout.write(
-            "Mass flow rate: {: 6.3f} g/sec ({: 6.3f} ml/sec). "
-            "Sensor voltage: {: 6.3f} V\033[J\n\n"
-            # Output sensor values and restore cursor position:
-            "{}\033[u".format(
-                1000*self.flow_sensor.kg_sec, 1000*self.flow_sensor.liter_sec,
-                self.flow_sensor.voltage,
-                # List of strings concatenated by join() method of empty string:
-                "".join(
-                    [
-                        "Channel: {} \n"
-                        "Resistance: {: 8.3f} Ohms, Temperature: {: 7.3f} °C, "
-                        "Power: {: 5.3f} J/s\033[J\n\n".format(
-                            self.info[i],
-                            self.resistance[i], self.temperature[i],
-                            self.power[i]
-                        ) for i in range(0, self.n_ch)
-                    ]
-                )
-            )
-        )
-        sys.stdout.flush()
-
-
-    # Extended output for calibration purposes:
+    # Command line output for calibration etc.
     def cal_output(self):
-        sys.stdout.write("\033[2J\033[H") # Clear screen
-
-        pt_channels_raw = [i.ch_avg[2] for i in self.measurements]
-        pt_channels_raw.append(self.measurements[-1].ch_avg[3])
-        pt_channels_oc = [i.ch_unscaled[2] for i in self.measurements]
-        pt_channels_oc.append(self.measurements[-1].ch_unscaled[3])
-
         sys.stdout.write(
+            "\033[2J\033[H" # Clear screen
             "Channel:  Flow.  Raw value: {: 10d}\n"
             "    Mass flow rate: {: 6.3f} g/sec ({: 6.3f} ml/sec). "
             "Sensor voltage: {: 6.3f} V\033[J\n\n"
