@@ -197,7 +197,7 @@ class IsoFlux(object):
                 1000*self.flow_sensor.kg_sec,
                 1000*self.flow_sensor.liter_sec,
                 self.flow_sensor.voltage,
-                int(self.measurements[0].ch_avg[0]),
+                int(self.measurements[0].ch_avg[1]),
                 # List of strings concatenated by the string.join() method:
                 "".join(
                     [
