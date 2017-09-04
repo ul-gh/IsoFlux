@@ -67,6 +67,8 @@ class IsoFlux(object):
         ]
         self.resistance = np.zeros(self.n_ch)
         self.temperature = np.zeros(self.n_ch)
+        # Temperature offset to account for sensor self-heating
+        self.T_offset = np.array([0.0] + [i.T_offset for i in self.measurements])
         # Influx sensor by definition has no power reading, self.power[0] stays
         # at zero and is stored to keep indexing identical for all channels.
         self.power = np.zeros(self.n_ch)

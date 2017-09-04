@@ -76,6 +76,8 @@ class Measurement(object):
         self.r_0 = [ch_conf[key]["r_0"] for key in pt_pair]
         # Resistance offset for sensor channel in Ohms
         self.r_offset = [ch_conf[key]["r_offset"] for key in pt_pair]
+        # Temperature offset for sensor channel in K
+        self.T_offset = [ch_conf[key]["T_offset"] for key in pt_pair]
         self.c_th_function = ch_conf["common"]["c_th_function"]
         # Power offset is set via MQTT
         self.p_offset = 0.0
@@ -120,10 +122,14 @@ class Measurement(object):
         ) - self.r_offset[1]
         # Calculate temperatures from Pt1000 sensor resistances
         # Inverted H.L.Callendar equation for Pt1000 temperatures:
-        self.T_upstream = up.ptRTD_temperature(self.r_upstream,r_0=self.r_0[0])
-        self.T_downstream = up.ptRTD_temperature(self.r_downstream,
-                                                 r_0=self.r_0[1]
-                                                 )
+        self.T_upstream = up.ptRTD_temperature(
+            self.r_upstream,
+            r_0=self.r_0[0]
+        ) + self.T_offset[0]
+        self.T_downstream = up.ptRTD_temperature(
+            self.r_downstream,
+            r_0=self.r_0[1]
+        ) + self.T_offset[1]
 
     def calculate_power(self, flow_kg_sec):
         # Specific heat capacity

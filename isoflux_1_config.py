@@ -35,7 +35,7 @@ CH_CONF = {
         # Sensitivity of flow sensor in liter/sec per volt
         # Wasser: SENS_FLOW = 14.30/1000
         # Glykol-Wasser 60-40: "SENS_FLOW": 15.89/1000
-        "SENS_FLOW": 15.60/1000,
+        "SENS_FLOW": 23.71/1000,
         # Density function in terms of temperature in °C for the coolant medium
         # "density_function": uli_physik.rho_water
         "density_function": uli_physik.rho_glykol60,
@@ -63,9 +63,13 @@ CH_CONF = {
         # Platinum RTD base (0°C) resistance calibration values
         # "r_0": 1000.000,
         "r_0": 1000.000,
-        # Resistance offset for result channels in Ohms
+        # Resistance offset for result channels in Ohms.
+        # This accounts for wiring resistance.
         "r_offset": 0.428,
 #        "r_offset": 0.000,
+        # Temperature offset in K. This accounts for sensor self-heating.
+        # This can be left at zero by definition for the cold reference chanel.
+        "T_offset": 0.0,
     },
     # The following entries configure the temperature sensors for the heat
     # sources
@@ -77,6 +81,7 @@ CH_CONF = {
         "r_0": 1000.055,
         "r_offset": 0.355,
 #        "r_offset": 0.000,
+        "T_offset": 0.0,
     },
     "hs_2": {
         "info": "Heat Source 2",
@@ -86,6 +91,7 @@ CH_CONF = {
         "r_0": 999.954,
         "r_offset": 0.350,
 #        "r_offset": 0.000,
+        "T_offset": 0.0,
     },
     "hs_3": {
         "info": "Heat Source 3",
@@ -95,6 +101,7 @@ CH_CONF = {
         "r_0": 1000.100,
         "r_offset": 0.323,
 #        "r_offset": 0.000,
+        "T_offset": 0.0,
     },
     "hs_4": {
         "info": "Heat Source 4",
@@ -104,6 +111,7 @@ CH_CONF = {
         "r_0": 1000.018,
         "r_offset": 0.270,
 #        "r_offset": 0.000,
+        "T_offset": 0.0,
     },
     "hs_5": {
         "info": "Heat Source 5",
@@ -113,6 +121,7 @@ CH_CONF = {
         "r_0": 999.936,
         "r_offset": 0.260,
 #        "r_offset": 0.000,
+        "T_offset": 0.0,
     },
 }
 ################################################################################
