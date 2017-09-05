@@ -1,0 +1,11 @@
+[Unit]
+Description=IsoFlux Heat Balance Calorimeter System
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /home/pi/src/isoflux/isoflux_application.py
+WorkingDirectory=/home/pi/src/isoflux
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target
