@@ -81,8 +81,8 @@ CH_CONF = {
         "r_0": 1000.055,
         "r_offset": 0.385,
 #        "r_offset": 0.000,
-#        "T_offset": -0.018,
-        "T_offset": 0.0,
+        "T_offset": -0.040,
+#        "T_offset": 0.0,
     },
     "hs_2": {
         "info": "Heat Source 2",
@@ -92,8 +92,8 @@ CH_CONF = {
         "r_0": 999.954,
         "r_offset": 0.350,
 #        "r_offset": 0.000,
-#        "T_offset": -0.133,
-        "T_offset": 0.0,
+        "T_offset": -0.043,
+#        "T_offset": 0.0,
     },
     "hs_3": {
         "info": "Heat Source 3",
@@ -103,8 +103,8 @@ CH_CONF = {
         "r_0": 1000.100,
         "r_offset": 0.323,
 #        "r_offset": 0.000,
-#        "T_offset": -0.107,
-        "T_offset": 0.0,
+        "T_offset": -0.005,
+#        "T_offset": 0.0,
     },
     "hs_4": {
         "info": "Heat Source 4",
@@ -114,8 +114,8 @@ CH_CONF = {
         "r_0": 1000.018,
         "r_offset": 0.290,
 #        "r_offset": 0.000,
-#        "T_offset": -0.092,
-        "T_offset": 0.0,
+        "T_offset": -0.009,
+#        "T_offset": 0.0,
     },
     "hs_5": {
         "info": "Heat Source 5",
@@ -125,8 +125,8 @@ CH_CONF = {
         "r_0": 999.936,
         "r_offset": 0.270,
 #        "r_offset": 0.000,
-#        "T_offset": -0.087,
-        "T_offset": 0.0,
+        "T_offset": -0.009,
+#        "T_offset": 0.0,
     },
 }
 ################################################################################

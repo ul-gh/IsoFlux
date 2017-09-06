@@ -3,8 +3,8 @@ Description=IsoFlux Heat Balance Calorimeter System
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python /home/pi/src/isoflux/isoflux_application.py
-WorkingDirectory=/home/pi/src/isoflux
+ExecStart=/usr/bin/python /home/pi/src/IsoFlux/isoflux_application.py
+WorkingDirectory=/home/pi/src/IsoFlux
 StandardOutput=null
 
 [Install]
