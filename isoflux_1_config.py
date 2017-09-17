@@ -9,6 +9,20 @@ class MQTT(object):
 ################################################################################
 
 ###########################  IsoFlux CONFIGURATION  ############################
+class FLOW_CONF(object):
+    # GPIO pin for the flow sensor impulses Using Broadcom numbering scheme
+    gpio = 21
+    # Additional averaging filter applied to all samples when updating the
+    # sensor channel with new ADC data using the update_avg() method
+    FILTER_SIZE = 4
+    # Sensitivity of flow sensor in liter/sec per volt
+    # Wasser: SENS_FLOW = 14.30/1000
+    # Glykol-Wasser 60-40: "SENS_FLOW": 15.89/1000
+    SENS_FLOW = 23.71/1000
+    # Density function in terms of temperature in °C for the coolant medium
+    # "density_function": uli_physik.rho_water
+    density_function = uli_physik.rho_glykol60
+
 # Order in which the heat sources are connected to the coolant supply
 flow_sequence = ["cold", "hs_1", "hs_2", "hs_3", "hs_4", "hs_5", ]
 
@@ -24,21 +38,6 @@ CH_CONF = {
         "FILTER_SIZE": 2,
         # "c_th_function": uli_physik.c_th_water
         "c_th_function": uli_physik.c_th_glykol60,
-    },
-    "flow": {
-        "info": "Flow Meter",
-        "mux": NEG_AIN7,
-        "offset": 0,
-        # Additional averaging filter applied to all samples when updating the
-        # sensor channel with new ADC data using the update_avg() method
-        "FILTER_SIZE": 4,
-        # Sensitivity of flow sensor in liter/sec per volt
-        # Wasser: SENS_FLOW = 14.30/1000
-        # Glykol-Wasser 60-40: "SENS_FLOW": 15.89/1000
-        "SENS_FLOW": 23.71/1000,
-        # Density function in terms of temperature in °C for the coolant medium
-        # "density_function": uli_physik.rho_water
-        "density_function": uli_physik.rho_glykol60,
     },
     # Fixed resistance reference (fixed AVCC divider)
     "rref": {

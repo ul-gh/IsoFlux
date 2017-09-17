@@ -49,8 +49,10 @@ class IsoFlux(object):
         # Flow sensor class has volumetric and gravimetric flow as properties
         # which are updated indirectly with ADC samples via the update() method.
         # Coolant temperature must be set via the set_temperature method.
-        self.flow_sensor = isoflux_sensors.Flow_sensor(self.adc, conf.CH_CONF)
-
+        self.flow_sensor = isoflux_sensors.Flow_sensor(self.adc,
+                                                       conf.CH_CONF,
+                                                       conf.FLOW_CONF
+                                                       )
         # For each measurement, we need one upstream and one downstream coolant
         # temperature Pt1000 sensor. This is a list of lists.
         pt_pairs = [self.flow_sequence[n-1:n+1] for n in range(1, self.n_ch)]

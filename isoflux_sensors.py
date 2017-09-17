@@ -6,23 +6,21 @@ import numpy as np
 import uli_physik as up
 
 class Flow_sensor(object):
-    def __init__(self, adc, ch_conf):
-        FILTER_SIZE_FLOW = ch_conf["flow"]["FILTER_SIZE"]
-        FILTER_SIZE_COMMON = ch_conf["common"]["FILTER_SIZE"]
-        self.info = ch_conf["flow"]["info"]
-        self.channel = ch_conf["flow"]["mux"]<<4 | ch_conf["common"]["mux"]
-        self.offset = ch_conf["flow"]["offset"]
+    def __init__(self, adc, ch_conf, flow_conf):
+        FILTER_SIZE = flow_conf.FILTER_SIZE
+        self.gpio = flow_conf.gpio
         self.v_per_digit = adc.v_ref*2.0/(ch_conf["common"]["gain"]*(2**23-1))
         # Sensitivity of the flowmeter channel in liter per second per volt
-        self.SENSITIVITY = ch_conf["flow"]["SENS_FLOW"]
-        self.density_function = ch_conf["flow"]["density_function"]
-        self.samples = np.zeros(FILTER_SIZE_FLOW)
-        self.avg_cycle = cycle(range(0, FILTER_SIZE_FLOW))
-        # Now initializing with data acquired from the ADC
-        # adc.mux is a Python @property setting the respecitve ADC register
-        adc.mux = self.channel
-        adc.sync()
-        for i in range(0, FILTER_SIZE_FLOW):
+        self.SENSITIVITY = flow_conf.SENS_FLOW
+        self.density_function = flow_conf.density_function
+        self.samples = np.zeros(FILTER_SIZE)
+        self.avg_cycle = cycle(range(0, FILTER_SIZE))
+
+        # Setting up a callback function for handling GPIO input pulse timing
+        cb1 = io.callback(time_flow_gpio)
+        # Activated said callback
+        cb1.enable()
+        for i in range(0, FILTER_SIZE):
             avg = 0.0
             for j in range(0, FILTER_SIZE_COMMON):
                 avg += adc.read_and_next_is(self.channel)
