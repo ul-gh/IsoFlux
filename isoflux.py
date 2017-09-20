@@ -4,6 +4,7 @@ import sys
 import time
 # import threading
 import numpy as np
+import pigpio as io
 import uli_physik as up
 from PiPyADC.pipyadc import ADS1256
 import isoflux_sensors
@@ -42,17 +43,24 @@ class IsoFlux(object):
         # Number of channels
         self.n_ch = len(self.flow_sequence)
 
+        # Initialize connection to the pigpio daemon used for interfacing the
+        # Raspberry Pi SPI bus by the ADS1256 library and also used for setting
+        # up the flow sensor pulse timing via a callback function by the
+        # isoflux_sensors.Flow_sensor class.
+        pi = io.pi()
+        if not pi.connected:
+            raise IOError("Could not connect to hardware via pigpio library")
+
         # Initialise ADC
-        self.adc = ADS1256(conf.ADS1256)
+        self.adc = ADS1256(conf.ADS1256, pi)
         self.adc.cal_self()
 
         # Flow sensor class has volumetric and gravimetric flow as properties
         # which are updated indirectly with ADC samples via the update() method.
         # Coolant temperature must be set via the set_temperature method.
-        self.flow_sensor = isoflux_sensors.Flow_sensor(self.adc,
-                                                       conf.CH_CONF,
-                                                       conf.FLOW_CONF
-                                                       )
+        self.flow_sensor = isoflux_sensors.Flow_sensor(
+            pi=pi, flow_conf=conf.FLOW_CONF, adc=self.adc, ch_conf=conf.CH_CONF
+        )
         # For each measurement, we need one upstream and one downstream coolant
         # temperature Pt1000 sensor. This is a list of lists.
         pt_pairs = [self.flow_sequence[n-1:n+1] for n in range(1, self.n_ch)]
