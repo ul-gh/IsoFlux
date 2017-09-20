@@ -49,11 +49,16 @@ class Flow_sensor(object):
         # Volumetric coolant flow rate liter/sec
         self.liter_sec = self.voltage * self.SENSITIVITY
         self.kg_sec = 0.0
+#FIXME:
+
 
     def set_temperature(self, temperature):
         self.temperature = temperature
 
     def update(self, unscaled_sample):
+#FIXME:
+        if time.time() - self.start_time < self.AVG_PERIOD:
+            self.timer_counter.disable()
         # Update sample buffer. Index using an iterator function.
         self.samples[self.avg_cycle.next()] = unscaled_sample
         self.voltage = np.average(self.samples) * self.v_per_digit
