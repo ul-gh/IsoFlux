@@ -60,9 +60,7 @@ class IsoFlux(object):
         # Coolant temperature must be known for calculation of gravimetric flow.
         # This can be set via the flow_sensor.temperature property. 
         # If no value is provided, a default of 25°C is used.
-        self.flow_sensor = isoflux_sensors.Flow_sensor(
-            pi=pi, flow_conf=conf.FLOW_CONF, adc=self.adc, ch_conf=conf.CH_CONF
-        )
+        self.flow_sensor = isoflux_sensors.Flow_sensor(pi, conf.FLOW_CONF)
         # For each measurement, we need one upstream and one downstream coolant
         # temperature Pt1000 sensor. This is a list of lists.
         pt_pairs = [self.flow_sequence[n-1:n+1] for n in range(1, self.n_ch)]

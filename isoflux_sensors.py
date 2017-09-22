@@ -23,7 +23,7 @@ class Flow_sensor(object):
         # Anyways:
         self._n_imp += 1
 
-    def __init__(self, pi, flow_conf, adc, ch_conf):
+    def __init__(self, pi, flow_conf):
         gpio = flow_conf.gpio
         pi.set_mode(gpio, io.INPUT)
         pi.set_pull_up_down(gpio, io.PUD_UP)
