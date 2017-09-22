@@ -12,9 +12,8 @@ class MQTT(object):
 class FLOW_CONF(object):
     # GPIO pin for the flow sensor impulses Using Broadcom numbering scheme
     gpio = 21
-    # Additional averaging filter applied to all samples when updating the
-    # sensor channel with new ADC data using the update_avg() method
-    FILTER_SIZE = 4
+    # Averaging time for flow meter input impulse timer/counter in seconds
+    AVG_PERIOD = 2
     # Sensitivity of flow sensor in liter/sec per volt
     # Wasser: SENS_FLOW = 14.30/1000
     # Glykol-Wasser 60-40: "SENS_FLOW": 15.89/1000

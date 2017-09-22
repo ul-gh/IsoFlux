@@ -57,7 +57,9 @@ class IsoFlux(object):
 
         # Flow sensor class has volumetric and gravimetric flow as properties
         # which are updated indirectly with ADC samples via the update() method.
-        # Coolant temperature must be set via the set_temperature method.
+        # Coolant temperature must be known for calculation of gravimetric flow.
+        # This can be set via the flow_sensor.temperature property. 
+        # If no value is provided, a default of 25°C is used.
         self.flow_sensor = isoflux_sensors.Flow_sensor(
             pi=pi, flow_conf=conf.FLOW_CONF, adc=self.adc, ch_conf=conf.CH_CONF
         )
@@ -100,10 +102,7 @@ class IsoFlux(object):
                 self.temperature[0] = measurement.T_upstream
                 # Influx temperature is also needed for determining the mass
                 # flow rate from volumetric flow measurement.
-                self.flow_sensor.set_temperature(measurement.T_upstream)
-            # Update flow rate value using ADC data acquired with every
-            # temperature scan
-            self.flow_sensor.update(measurement.ch_unscaled[0])
+                self.flow_sensor.temperature = measurement.T_upstream
             # When gravimetric flow rate is known, thermal power is calculated
             measurement.calculate_power(self.flow_sensor.kg_sec)
             # Because self.[resistance|power|temperature][0] stores the coolant

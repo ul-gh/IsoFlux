@@ -9,62 +9,71 @@ import uli_physik as up
 class Flow_sensor(object):
     # Instance properties for the timer/counter background callback function.
     # Number of input impulses counted in a cycle:
-    n_imp = 0
+    _n_imp = 0
     # Timestamp for first and last input transition in each cycle:
-    t_0, t_1 = 0.0, 0.0
+    _t_0, _t_1 = 0.0, 0.0
     
     # Callback for counting and timing flow sensor GPIO input pulses.
     # Invoked by pigpio subsystem.
     def time_pulses(self, gpio, level, tick):
-        if self.n_imp == 0:
-            self.t_0 = tick
+        if self._n_imp == 0:
+            self._t_0 = tick
         else:
-            self.t_1 = tick
+            self._t_1 = tick
         # Anyways:
-        self.n_imp += 1
+        self._n_imp += 1
 
     def __init__(self, pi, flow_conf, adc, ch_conf):
         gpio = flow_conf.gpio
         pi.set_mode(gpio, io.INPUT)
         pi.set_pull_up_down(gpio, io.PUD_UP)
-
         # Time in seconds for avaraging input pulses
         self.avg_period = flow_conf.AVG_PERIOD
         # Sensitivity of the flowmeter channel in pulses per liter
         self.SENSITIVITY = flow_conf.SENS_FLOW
-        self.density_function = flow_conf.density_function
-
         # Set up a callback function for handling GPIO input pulse timing
         self.timer_counter = io.callback(self.time_pulses)
-        start_time = time.time()
         # Activated said callback
-        cb1.enable()
-        while (time.time() - start_time < AVG_PERIOD):
-            time.sleep(0.2)
-            avg = 0.0
-            for j in range(0, FILTER_SIZE_COMMON):
-                avg += adc.read_and_next_is(self.channel)
-            self.samples[i] = avg/FILTER_SIZE_COMMON - self.offset
-        self.voltage = np.average(self.samples) * self.v_per_digit
+        self.timer_counter.enable()
+        _start_time = time.time()
         # Volumetric coolant flow rate liter/sec
-        self.liter_sec = self.voltage * self.SENSITIVITY
-        self.kg_sec = 0.0
-#FIXME:
+        self._liter_sec = 0.0
+        # Default flow sensor temperature for density calculation
+        self.temperature = 25.0
+        self.density_function = flow_conf.density_function
 
+    @property
+    def liter_sec(self):
+        t = time.time()
+        if t - self._start_time < self.AVG_PERIOD:
+            # While averaging time has not passed, return stored value
+            return self._liter_sec
+        else:
+            # Process tally of input pulses and calculate volumetric flow rate
+            # in liter/sec
+            self._start_time = t
+            # Return zero when no pulses were counted
+            if _n_imp == 0:
+                return 0.0
+            else:
+                # Access to global variables is not atomic, thus pause timer
+                # during calculateion
+                self.timer_counter.disable()
+                self._liter_sec = self._n_imp / (
+                    self.SENSITIVITY * (self._t_1-self._t_0)
+                )
+                self.timer_counter.enable()
+                return self._liter_sec
+    @liter_sec.setter
+    def liter_sec(self, value):
+        raise AttributeError("This is a read-only attribute!")
 
-    def set_temperature(self, temperature):
-        self.temperature = temperature
-
-    def update(self, unscaled_sample):
-#FIXME:
-        if time.time() - self.start_time < self.AVG_PERIOD:
-            self.timer_counter.disable()
-        # Update sample buffer. Index using an iterator function.
-        self.samples[self.avg_cycle.next()] = unscaled_sample
-        self.voltage = np.average(self.samples) * self.v_per_digit
-        # Volumetric coolant flow rate liter/sec
-        self.liter_sec = self.voltage * self.SENSITIVITY
-        self.kg_sec = self.liter_sec * self.density_function(self.temperature)
+    @property
+    def kg_sec(self):
+        return self.liter_sec * self.density_function(self.temperature)
+    @kg_sec.setter
+    def kg_sec(self, value):
+        raise AttributeError("This is a read-only attribute!")
 
 
 class Measurement(object):
@@ -76,10 +85,7 @@ class Measurement(object):
         # pt_pair[0]: upstream temperature sensor. pt_pair[1]: downstream sensor
         self.info = ch_conf[pt_pair[1]]["info"]
         self.ch_seq = [
-              # Flow sensor channel first,
-              ch_conf["flow"]["mux"] << 4
-            | ch_conf["common"]["mux"],
-              # resistance reference channel next,
+              # Resistance reference channel  first,
               ch_conf["rref"]["mux"] << 4
             | ch_conf["common"]["mux"],
               # followed by the upstream temperature sensor, and
@@ -91,7 +97,7 @@ class Measurement(object):
         ]
         # Channel offset values are initialized from config file.
         self.offset = [
-            ch_conf[key]["offset"] for key in ["flow", "rref"] + pt_pair
+            ch_conf[key]["offset"] for key in ["rref"] + pt_pair
         ]
         # Measurement channel series (bias-) resistance value
         self.R_S = [ch_conf[key]["R_S"] for key in pt_pair]
@@ -109,9 +115,9 @@ class Measurement(object):
     def scan_temperatures(self, adc):
         # Buffer for raw input samples.
         # For each measurement channel, four samples are acquired in succession:
-        # 1.: flow sensor, 2.: resistance reference,
-        # 3.: upstream Pt1000 sensor, 4.: downstream Pt1000 sensor
-        ch_buf = np.zeros((self.FILTER_SIZE, 4), dtype=np.int)
+        # 1.: resistance reference channel,
+        # 2.: upstream Pt1000 sensor, 3.: downstream Pt1000 sensor
+        ch_buf = np.zeros((self.FILTER_SIZE, 3), dtype=np.int)
 
         # From now, update chX_buffer cyclically with new ADC samples and
         # calculate results with averaged data.
