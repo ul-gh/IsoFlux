@@ -13,10 +13,14 @@ class Flow_sensor(object):
     _n_imp = 0
     # Timestamp for first and last input transition in each cycle:
     _t_0, _t_1 = 0.0, 0.0
+    # Pause flag
+    _pause_timer = False
     
     # Callback for counting and timing flow sensor GPIO input pulses.
     # Called by pi.callback().
     def timer_ctr(self, gpio, level, tick):
+        if self._pause_timer == True:
+            return
         if self._n_imp == 0:
             self._t_0 = tick
         else:
@@ -25,17 +29,17 @@ class Flow_sensor(object):
         self._n_imp += 1
 
     def __init__(self, pi, flow_conf):
-        self.pi = pi
-        self.gpio = flow_conf.gpio
-        pi.set_mode(self.gpio, io.INPUT)
-        pi.set_pull_up_down(self.gpio, io.PUD_UP)
+        pi = pi
+        gpio = flow_conf.gpio
+        pi.set_mode(gpio, io.INPUT)
+        pi.set_pull_up_down(gpio, io.PUD_UP)
         # Time in seconds for avaraging input pulses
         self.AVG_PERIOD = flow_conf.AVG_PERIOD
         # Sensitivity of the flowmeter channel in pulses per liter
         self.SENSITIVITY = flow_conf.SENS_FLOW
         # Set up a callback function for handling GPIO input pulse timing
         self.timer_counter = pi.callback(
-            self.gpio, io.FALLING_EDGE, self.timer_ctr
+            gpio, io.FALLING_EDGE, self.timer_ctr
         )
         self._start_time = time.time()
         # Volumetric coolant flow rate liter/sec
@@ -61,16 +65,13 @@ class Flow_sensor(object):
             else:
                 # Access to global variables is not atomic, thus pause timer
                 # during calculateion
-                self.timer_counter.cancel()
+                self._pause_timer = True
                 self._liter_sec = 1E6*self._n_imp / (
                     self.SENSITIVITY * (self._t_1 - self._t_0)
                 )
                 # Reset counter
                 self._n_imp = 0
-               # self.timer_counter.enable()
-                self.timer_counter = self.pi.callback(
-                    self.gpio, io.FALLING_EDGE, self.timer_ctr
-                )
+                self._pause_timer = False
                 return self._liter_sec
     @liter_sec.setter
     def liter_sec(self, value):
