@@ -14,13 +14,11 @@ class FLOW_CONF(object):
     gpio = 21
     # Averaging time for flow meter input impulse timer/counter in seconds
     AVG_PERIOD = 2
-    # Sensitivity of flow sensor in liter/sec per volt
-    # Wasser: SENS_FLOW = 14.30/1000
-    # Glykol-Wasser 60-40: "SENS_FLOW": 15.89/1000
-    SENS_FLOW = 23.71/1000
+    # Sensitivity of flow sensor in pulses per liter
+    SENS_FLOW = 8500
     # Density function in terms of temperature in °C for the coolant medium
     # "density_function": uli_physik.rho_water
-    density_function = uli_physik.rho_glykol60
+    density_function = staticmethod(uli_physik.rho_glykol60)
 
 # Order in which the heat sources are connected to the coolant supply
 flow_sequence = ["cold", "hs_1", "hs_2", "hs_3", "hs_4", "hs_5", ]
@@ -139,36 +137,47 @@ class ADS1256(object):
     # To create multiple class instances for more than one AD converter, a
     # unique configuration must be specified as argument for each instance.
     #
-    # The following pins are compatible with
-    # the Waveshare High Precision AD/DA board on the Raspberry Pi 2B and 3B
+    # The following pins are compatible with the Waveshare High Precision AD/DA
+    # board on the Raspberry Pi 2B and 3B
     #
     # SPI_CHANNEL corresponds to the chip select hardware bin controlled by the
     # SPI hardware. For the Waveshare board this pin is not even connected, so
-    # this code does not use hardware-controlled CS and this is a don't care.
+    # this code does not use hardware-controlled CS and this is a don't care
+    # value.
     # FIXME: Implement hardware chip select as an option.
     SPI_CHANNEL   = 1
-    # SPI_MODE specifies clock polarity and phase; MODE=1 <=> CPOL=0, CPHA=1
-    SPI_MODE      = 1
-    # SPI clock in Hz. The ADS1256 supports a minimum of 1/10th of the output
-    # sample data rate in Hz to 1/4th of the oscillator CLKIN_FREQUENCY which
-    # results in a value of 1920000 Hz for the Waveshare board. However, since
-    # the Raspberry pi only supports power-of-two fractions of the 250MHz system
-    # clock, the closest value would be 1953125 Hz, which is slightly out spec
-    # for the ADS1256. Choosing 250MHz/256 = 976563 Hz is a safe choice.
+    # SPI_FLAGS sets MODE=1 <=> CPOL=0, CPHA=1. See pigpio documentation.
+    # The waveshare ADC board does not use the SPI peripheral hardware for the
+    # chip
+    # select lines, but uses the CS_PIN GPIO defined further below. CS disabled:
+    #                  bbbbbbRTnnnnWAuuupppmm
+    SPI_FLAGS      = 0b0000000000000011100001
+    # When using the SPI hardware chip select lines, use the following flags:
+    # SPI_FLAGS      = 0b0000000000000000000001
+    # SPI clock rate in Hz. The ADS1256 supports a minimum of 1/10th of the
+    # output sample data rate in Hz to 1/4th of the oscillator CLKIN_FREQUENCY
+    # which results in a value of 1920000 Hz for the Waveshare board. However,
+    # since the Raspberry pi only supports power-of-two fractions of the 250MHz
+    # system clock, the closest value would be 1953125 Hz, which is slightly out
+    # of spec for the ADS1256. Choosing 250MHz/256 = 976563 Hz is a safe choice.
     SPI_FREQUENCY = 976563
     # Risking the slightly out-of-spec speed:
     #SPI_FREQUENCY = 1953125
 
     # The RPI GPIOs used: All of these are optional and must be set to None if
-    # not used. In This case, the inputs must be hardwired to the correct logic 
-    # level and a sufficient DRDY_TIMEOUT must be specified further below.
+    # not used. In This case, the inputs must be hardwired to the correct level
+    # and a sufficient DRDY_TIMEOUT must be specified further below.
     # Obviously, when not using hardware polling of the DRDY signal, acquisition
     # will be much slower with long delays. See datasheet..
     #CS_PIN      = None
-    CS_PIN      = 15 
-    DRDY_PIN    = 11
-    RESET_PIN   = 12
-    PDWN_PIN    = 13
+    #CS_PIN      = 15
+    #DRDY_PIN    = 11
+    #RESET_PIN   = 12
+    #PDWN_PIN    = 13
+    DRDY_PIN    = 17
+    RESET_PIN   = 18
+    PDWN_PIN    = 27
+    CS_PIN      = 22
     ############################################################################
 
     ################  ADS1256 Constant Configuration Settings  #################

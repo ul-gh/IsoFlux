@@ -4,6 +4,7 @@
 import time
 from itertools import cycle
 import numpy as np
+import pigpio as io
 import uli_physik as up
 
 class Flow_sensor(object):
@@ -14,8 +15,8 @@ class Flow_sensor(object):
     _t_0, _t_1 = 0.0, 0.0
     
     # Callback for counting and timing flow sensor GPIO input pulses.
-    # Invoked by pigpio subsystem.
-    def time_pulses(self, gpio, level, tick):
+    # Called by pi.callback().
+    def timer_ctr(self, gpio, level, tick):
         if self._n_imp == 0:
             self._t_0 = tick
         else:
@@ -24,23 +25,25 @@ class Flow_sensor(object):
         self._n_imp += 1
 
     def __init__(self, pi, flow_conf):
-        gpio = flow_conf.gpio
-        pi.set_mode(gpio, io.INPUT)
-        pi.set_pull_up_down(gpio, io.PUD_UP)
+        self.pi = pi
+        self.gpio = flow_conf.gpio
+        pi.set_mode(self.gpio, io.INPUT)
+        pi.set_pull_up_down(self.gpio, io.PUD_UP)
         # Time in seconds for avaraging input pulses
-        self.avg_period = flow_conf.AVG_PERIOD
+        self.AVG_PERIOD = flow_conf.AVG_PERIOD
         # Sensitivity of the flowmeter channel in pulses per liter
         self.SENSITIVITY = flow_conf.SENS_FLOW
         # Set up a callback function for handling GPIO input pulse timing
-        self.timer_counter = io.callback(self.time_pulses)
-        # Activated said callback
-        self.timer_counter.enable()
-        _start_time = time.time()
+        self.timer_counter = pi.callback(
+            self.gpio, io.FALLING_EDGE, self.timer_ctr
+        )
+        self._start_time = time.time()
         # Volumetric coolant flow rate liter/sec
         self._liter_sec = 0.0
         # Default flow sensor temperature for density calculation
         self.temperature = 25.0
         self.density_function = flow_conf.density_function
+
 
     @property
     def liter_sec(self):
@@ -53,16 +56,21 @@ class Flow_sensor(object):
             # in liter/sec
             self._start_time = t
             # Return zero when no pulses were counted
-            if _n_imp == 0:
+            if self._n_imp == 0:
                 return 0.0
             else:
                 # Access to global variables is not atomic, thus pause timer
                 # during calculateion
-                self.timer_counter.disable()
-                self._liter_sec = self._n_imp / (
-                    self.SENSITIVITY * (self._t_1-self._t_0)
+                self.timer_counter.cancel()
+                self._liter_sec = 1E6*self._n_imp / (
+                    self.SENSITIVITY * (self._t_1 - self._t_0)
                 )
-                self.timer_counter.enable()
+                # Reset counter
+                self._n_imp = 0
+               # self.timer_counter.enable()
+                self.timer_counter = self.pi.callback(
+                    self.gpio, io.FALLING_EDGE, self.timer_ctr
+                )
                 return self._liter_sec
     @liter_sec.setter
     def liter_sec(self, value):
@@ -135,18 +143,18 @@ class Measurement(object):
         # Calculate resistances for multi-leg wheatstone bridge setup
         # starting with upstream (cold inlet) sensor resistance value
         r_upstream_w_offset = up.wheatstone(
-            self.ch_unscaled[2],
             self.ch_unscaled[1],
+            self.ch_unscaled[0],
             self.N_REF,
             self.R_S[0]
         )
         self.r_upstream = r_upstream_w_offset - self.r_offset[0]
         # Downstream sensor uses the upstream sensor as reference bridge leg
         self.r_downstream = up.wheatstone(
-            self.ch_unscaled[3],
+            self.ch_unscaled[2],
             # Differential measurement must be added to absolute measurement
             # to calculate the reference voltage for the second bridge setup.
-            self.ch_unscaled[2] + self.ch_unscaled[1],
+            self.ch_unscaled[1] + self.ch_unscaled[0],
             self.R_S[0]/r_upstream_w_offset,
             self.R_S[1]
         ) - self.r_offset[1]

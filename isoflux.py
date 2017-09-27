@@ -148,15 +148,14 @@ class IsoFlux(object):
     def cal_output(self):
         sys.stdout.write(
             "\033[2J\033[H" # Clear screen
-            "Channel:  Flow.  Raw value: {: 10d}\n"
+            "Channel:  Flow sensor impulse frequency: {: 3.3f} Hz\n"
             "    Mass flow rate: {: 6.3f} g/sec ({: 6.3f} ml/sec). "
-            "Sensor voltage: {: 6.3f} V\033[J\n\n"
+            "\033[J\n\n"
             "Channel:  R_ref.  Raw value: {: 10d}\033[J\n\n"
             "{}".format(
-                int(self.flow_sensor.voltage / self.flow_sensor.v_per_digit),
+                self.flow_sensor.liter_sec * self.flow_sensor.SENSITIVITY,
                 1000*self.flow_sensor.kg_sec,
                 1000*self.flow_sensor.liter_sec,
-                self.flow_sensor.voltage,
                 int(self.measurements[0].ch_avg[1]),
                 # List of strings concatenated by the string.join() method:
                 "".join([
