@@ -13,7 +13,7 @@ class FLOW_CONF(object):
     # GPIO pin for the flow sensor impulses Using Broadcom numbering scheme
     gpio = 21
     # Averaging time for flow meter input impulse timer/counter in seconds
-    AVG_PERIOD = 2
+    AVG_PERIOD = 10
     # Sensitivity of flow sensor in pulses per liter
     SENS_FLOW = 8500
     # Density function in terms of temperature in °C for the coolant medium

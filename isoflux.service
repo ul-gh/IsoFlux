@@ -3,6 +3,8 @@ Description=IsoFlux Heat Balance Calorimeter System
 
 [Service]
 Type=simple
+Requires=pigpiod.service
+After=pigpiod.service
 ExecStart=/usr/bin/python /home/pi/src/IsoFlux/isoflux_application.py
 WorkingDirectory=/home/pi/src/IsoFlux
 StandardOutput=null
