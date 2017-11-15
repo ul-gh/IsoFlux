@@ -1,5 +1,7 @@
 # IsoFlux
 
+![Screenshot](screenshot.png)
+
      """IsoFlux - Quasi-Isothermal Heat Balance Calorimetry
 
     Thermal power measurement for engineering application performing
